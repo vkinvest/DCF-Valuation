@@ -72,3 +72,9 @@ def bars(all_statement_items):
         all_bs_bars[key] = bs_bars
         print(3)
     return all_bs_bars
+    
+    
+    ticker_list = ['aapl', 'tsla']
+all_companies = get_statements(ticker_list)
+all_statement_items = statement_items(all_companies)
+all_bs_bars = bars(all_statement_items)
