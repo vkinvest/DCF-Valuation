@@ -1,0 +1,87 @@
+import yahoo_fin.stock_info as si
+import pandas as pd
+import chart_studio
+import chart_studio.plotly as py
+import plotly.graph_objs as go
+
+
+chart_studio.tools.set_credentials_file(username='vkinvest', api_key='elNeLZJt5Jrxdkw3j589')
+
+
+def get_statements(ticker_list):
+    all_companies = {}
+    three_statements = {}
+
+    for ticker in ticker_list:
+        three_statements['balance'] = si.get_balance_sheet(ticker).T.sort_index()
+        three_statements['income'] = si.get_income_statement(ticker).T.sort_index()
+        three_statements['cashflow'] = si.get_cash_flow(ticker).T.sort_index()
+        all_companies[ticker] = three_statements
+    return all_companies
+
+
+def time_series(all_companies):
+    for value in all_companies:
+        time = all_companies[value]['balance'].index
+    return time
+
+
+def statement_items(all_companies):
+    all_items = {}
+    statement_items = {}
+
+    for value in all_companies:
+        statement_items['bs'] = list(all_companies[value]['balance'].columns)
+        statement_items['is'] = list(all_companies[value]['income'].columns)
+        statement_items['cf'] = list(all_companies[value]['cashflow'].columns)
+    return statement_items
+
+
+def show_stacked_bar(statement_items):
+    bs_bars = []
+    num = 0
+
+    for value in statement_items['bs']:
+        asset_bar = go.Bar(
+            name=value,
+            x=time.strftime("%Y/%m/%d"),
+            y=list(pd.DataFrame(statement_items['bs']).T.iloc[0, num])
+        )
+        num += 1
+        bs_bars.append(asset_bar)
+    fig_bs = go.Figure(data=bs_bars, layout=go.Layout(barmode='stack'))
+    py.plot(fig_bs, filename=' {} Total Assets Breakdown'.format(x for x in ticker_list)) #??????? name is not right
+
+    is_bars = []
+    num = 0
+    for value in statement_items['is']:
+        income_bar = go.Bar(
+            name=value,
+            x=time.strftime("%Y/%m/%d"),
+            y=list(pd.DataFrame(statement_items['is']).T.iloc[0, num])
+        )
+        num += 1
+        is_bars.append(income_bar)
+    fig_is = go.Figure(data=is_bars, layout=go.Layout(barmode='stack'))
+    py.plot(fig_is, filename='Total Income Breakdown')
+
+    cf_bars = []
+    num = 0
+    for value in statement_items['cf']:
+        cash_bar = go.Bar(
+            name=value,
+            x=time.strftime("%Y/%m/%d"),
+            y=list(pd.DataFrame(statement_items['cf']).T.iloc[0, num])
+        )
+        num += 1
+        cf_bars.append(cash_bar)
+    fig_cf = go.Figure(data=cf_bars, layout=go.Layout(barmode='stack'))
+    py.plot(fig_cf, filename='Total Cashflow Breakdown')
+
+
+ticker_list = ['aapl', 'tsla']
+all_companies = get_statements(ticker_list)
+statement_items = statement_items(all_companies)
+time = time_series(all_companies)
+
+show_stacked_bar(statement_items)
