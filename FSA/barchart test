@@ -1,0 +1,74 @@
+import yahoo_fin.stock_info as si
+import pandas as pd
+import chart_studio
+import chart_studio.plotly as py
+import plotly.graph_objs as go
+
+
+chart_studio.tools.set_credentials_file(username='vkinvest', api_key='elNeLZJt5Jrxdkw3j589')
+
+
+def get_statements(ticker_list):
+    all_companies = {}
+    three_statements = {}
+
+    for ticker in ticker_list:
+        three_statements['balance'] = si.get_balance_sheet(ticker).T.sort_index()
+        three_statements['income'] = si.get_income_statement(ticker).T.sort_index()
+        three_statements['cashflow'] = si.get_cash_flow(ticker).T.sort_index()
+        all_companies[ticker] = three_statements
+    return all_companies
+
+
+def time_series(all_companies):
+    for value in all_companies:
+        time = all_companies[value]['balance'].index
+    return time
+
+
+def statement_items(all_companies):
+    all_statement_items = {}
+    statement_items = {}
+
+    for key in all_companies:
+        for value in all_companies:
+            statement_items['bs'] = list(all_companies[value]['balance'].columns)
+            statement_items['is'] = list(all_companies[value]['income'].columns)
+            statement_items['cf'] = list(all_companies[value]['cashflow'].columns)
+        all_statement_items[key] = statement_items
+    return all_statement_items
+
+
+# def show_stacked_bar(all_statement_items):
+
+def bars(all_statement_items):
+    time = time_series(all_companies)
+    bs_bars = []
+    is_bars = []
+    cf_bars = []
+
+    all_bs_bars = {}
+    all_is_bars = {}
+    all_cf_bars = {}
+    num = 0
+    y = []
+
+    for value in all_statement_items:
+        company = value
+        for value in all_statement_items[value]:
+            items = value
+            print(value)
+            asset_bar = go.Bar(
+                name=value,
+                x=time.strftime("%Y/%m/%d"),
+                y=list(pd.DataFrame(all_statement_items[company][items]).T.iloc[0, num])
+            )
+            num += 1
+            print(1)
+            bs_bars = bs_bars.append(asset_bar)
+            is_bars = is_bars.append(asset_bar)
+            cf_bars = cf_bars.append(asset_bar)
+            print(2)
+        all_bs_bars[key] = bs_bars
+        print(3)
+    return all_bs_bars
