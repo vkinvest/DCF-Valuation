@@ -43,38 +43,37 @@ def statement_items(all_companies):
 
 def bars(all_statement_items):
     time = time_series(all_companies)
+    bars = {}
+
     bs_bars = []
     is_bars = []
     cf_bars = []
-
-    all_bs_bars = {}
-    all_is_bars = {}
-    all_cf_bars = {}
-    num = 0
-    y = []
+    all_bars = {}
 
     for value in all_statement_items:
         company = value
+        print(company)
+        num = 0
+
         for value in all_statement_items[value]:
             items = value
-            print(value)
-            asset_bar = go.Bar(
+            bars[items] = go.Bar(
                 name=value,
                 x=time.strftime("%Y/%m/%d"),
                 y=list(pd.DataFrame(all_statement_items[company][items]).T.iloc[0, num])
             )
             num += 1
-            print(1)
-            bs_bars = bs_bars.append(asset_bar)
-            is_bars = is_bars.append(asset_bar)
-            cf_bars = cf_bars.append(asset_bar)
-            print(2)
-        all_bs_bars[key] = bs_bars
-        print(3)
-    return all_bs_bars
+            bs_bars.append(bars['bs'])
+            print(bars['bs'])
+        all_bars[company] = bars
+    return all_bars
+    
+       # fig_bs = go.Figure(data=bs_bars, layout=go.Layout(barmode='stack'))
+       # py.plot(fig_bs, filename=' {} Total Assets Breakdown'.format(x for x in ticker_list)) #??????? name is not right
+
     
     
-    ticker_list = ['aapl', 'tsla']
+ticker_list = ['aapl', 'tsla']
 all_companies = get_statements(ticker_list)
 all_statement_items = statement_items(all_companies)
-all_bs_bars = bars(all_statement_items)
+all_bars = bars(all_statement_items)
