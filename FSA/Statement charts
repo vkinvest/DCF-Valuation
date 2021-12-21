@@ -1,0 +1,61 @@
+import yahoo_fin.stock_info as si
+import pandas as pd
+import chart_studio
+import chart_studio.plotly as py
+import plotly.graph_objs as go
+
+chart_studio.tools.set_credentials_file(username='vkinvest', api_key='elNeLZJt5Jrxdkw3j589')
+
+def charts():
+    bs_list = []
+    bs_items = list(balance.columns)
+    num = 0
+
+    for item in bs_items:
+        asset_bar = go.Bar(
+            name=item,
+            x=balance.index.strftime("%Y/%m/%d"),
+            y=balance.T.iloc[num]
+        )
+        num += 1
+        bs_list.append(asset_bar)
+    fig_bs = go.Figure(data=bs_list, layout=go.Layout(barmode='stack'))
+    py.plot(fig_bs, filename='Total Assets Breakdown')
+
+    is_list = []
+    is_items = list(income.columns)
+    num = 0
+
+    for item in is_items:
+        income_bar = go.Scatter(
+            name=item,
+            x=income.index.strftime("%Y/%m/%d"),
+            y=income.T.iloc[num]
+        )
+        num += 1
+        is_list.append(income_bar)
+    fig_is = go.Figure(data=is_list, layout=go.Layout(barmode='stack'))
+    py.plot(fig_is, filename='Total Income Breakdown')
+
+    cf_list = []
+    cf_items = list(cashflow.columns)
+    num = 0
+
+    for item in cf_items:
+        cash_bar = go.Scatter(
+            name=item,
+            x=cashflow.index.strftime("%Y/%m/%d"),
+            y=cashflow.T.iloc[num]
+        )
+        num += 1
+        cf_list.append(cash_bar)
+    fig_cf = go.Figure(data=cf_list, layout=go.Layout(barmode='stack'))
+    py.plot(fig_cf, filename='Total Cashflow Breakdown')
+
+
+t = 'tsla'
+balance = pd.DataFrame.from_dict(si.get_balance_sheet(t).dropna().T).sort_index()
+income = pd.DataFrame.from_dict(si.get_income_statement(t).dropna().T).sort_index()
+cashflow = pd.DataFrame.from_dict(si.get_cash_flow(t).dropna().T).sort_index()
+
+charts()
