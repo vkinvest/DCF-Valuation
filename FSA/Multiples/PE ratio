@@ -24,7 +24,7 @@ def scatter():
         print(col)
         is_list.append(income_bar)
     fig_is = go.Figure(data=is_list, layout=go.Layout(barmode='stack'))
-    py.plot(fig_is, filename='Total Income Breakdown')
+    py.plot(fig_is, filename='Tesla historical PE ratios')
 
 
 charts = pd.read_excel('chart_data.xlsx')#.set_index('Date')
