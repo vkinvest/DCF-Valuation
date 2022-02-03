@@ -12,7 +12,6 @@ def pe_ratios():
 
 def scatter():
     is_list = []
-    num = 1
 
     for col in charts.columns[1:]:
         income_bar = go.Scatter(
@@ -20,9 +19,9 @@ def scatter():
             x=charts['Date'],
             y=charts[col]
         )
-        num +=1
         print(col)
         is_list.append(income_bar)
+
     fig_is = go.Figure(data=is_list, layout=go.Layout(barmode='stack'))
     py.plot(fig_is, filename='Tesla historical PE ratios')
 

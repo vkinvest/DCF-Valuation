@@ -9,7 +9,6 @@ import numpy as np
 
 def financial_snapshot():
     snapshot_list = []
-    num = 1
 
     for col in snapshot.columns[1:]:
         snapshot_bar = go.Scatter(
@@ -17,7 +16,6 @@ def financial_snapshot():
             x=snapshot['name'],
             y=snapshot[col]
         )
-        num += 1
         print(col)
         snapshot_list.append(snapshot_bar)
     fig_is = go.Figure(data=snapshot_list, layout=go.Layout(barmode='stack'))
@@ -26,7 +24,6 @@ def financial_snapshot():
 
 def expense_margin():
     margin_list = []
-    num = 1
 
     for col in margin.columns[1:]:
         margin_bar = go.Scatter(
@@ -34,7 +31,6 @@ def expense_margin():
             x=margin['name'],
             y=margin[col]
         )
-        num += 1
         print(col)
         margin_list.append(margin_bar)
     fig_is = go.Figure(data=margin_list, layout=go.Layout(barmode='stack'))
@@ -43,7 +39,6 @@ def expense_margin():
 
 def growth_scatter():
     growth_list = []
-    num = 1
 
     for col in growth.columns[1:]:
         growth_bar = go.Scatter(
@@ -51,7 +46,7 @@ def growth_scatter():
             x=growth['name'],
             y=growth[col]
         )
-        num += 1
+
         print(col)
         growth_list.append(growth_bar)
     fig_is = go.Figure(data=growth_list, layout=go.Layout(barmode='stack'))
@@ -70,18 +65,17 @@ operating['GrossProfit growth'] = (operating['GrossProfit'] - operating['GrossPr
 operating['OperatingExpense growth'] = (operating['OperatingExpense'] - operating['OperatingExpense'].shift(1)) / operating['OperatingExpense'].shift(1)
 operating['OperatingIncome growth'] = (operating['OperatingIncome'] - operating['OperatingIncome'].shift(1)) / operating['OperatingIncome'].shift(1)
 growth = operating.filter(regex=r'name|growth')
-# inflows = operating.drop(growth, axis='columns')
 
 
 expense = financials[1:].filter(regex=r'name|OperatingExpense|Administration|Research|Marketing|^OperatingIncome|TotalExpenses')
 expense['OperatingExpense margin'] = (expense['OperatingExpense'] / operating['TotalRevenue'])
 expense['SG&A margin'] = (expense['SellingGeneralAndAdministration'] / operating['TotalRevenue'])
 expense['R&D margin'] = (expense['ResearchAndDevelopment'] / operating['TotalRevenue'])
-# expense['Marketing margin'] = (expense['SellingAndMarketingExpense'] / operating['TotalRevenue'])
+
 expense['OperatingIncome margin'] = (expense['OperatingIncome'] / operating['TotalRevenue'])
 expense['TotalExpenses margin'] = (expense['TotalExpenses'] / operating['TotalRevenue'])
 margin = expense.filter(regex=r'name|margin')
-# outflows = expense.drop(margin, axis='columns')
+
 
 growth_scatter()
 expense_margin()
