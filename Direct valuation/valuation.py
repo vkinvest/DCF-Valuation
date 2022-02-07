@@ -8,7 +8,7 @@ class Valuation:
 
     def __init__(self, ticker):
         self.ticker = ticker
-        self.financials = pd.read_excel(f'{ticker}_quarterly_financials.xlsx')[:-1].fillna(0)
+        self.income = pd.read_excel(f'{ticker}_quarterly_financials')[:-1].fillna(0)
         self.balance = pd.read_excel(f'{ticker}_quarterly_balance-sheet.xlsx')[:-1].fillna(0)
         self.cashflow = pd.read_excel(f'{ticker}_quarterly_cash-flow.xlsx')[:-1].fillna(0)
 
@@ -20,8 +20,8 @@ class Valuation:
 
     def free_cashflow(self):
         inflows = {
-                'EBIT': self.financials['EBIT'],
-                'NCC': self.financials['ReconciledDepreciation'],
+                'EBIT': self.income['EBIT'],
+                'NCC': self.income['ReconciledDepreciation'],
                 'new_borrowing': self.cashflow['FinancingCashFlow']
                 }
 
@@ -29,16 +29,15 @@ class Valuation:
         fc_inv = self.cashflow['CapitalExpenditure']
 
         outflows = {
-                'tax': self.financials['PretaxIncome'] - self.financials['NetIncome'],
+                'tax': self.income['PretaxIncome'] - self.income['NetIncome'],
                 'change_wc': wc_inv.shift(1) - wc_inv,
                 'change_fc': fc_inv.shift(1) - fc_inv,
-                'interests': self.financials['InterestExpense'],
+                'interests': self.income['InterestExpense'],
                 }
 
         fcff = inflows['EBIT'] + outflows['tax'] + inflows['NCC'] + outflows['change_wc'] + outflows['change_fc']
         fcfe = fcff - outflows['interests'] + inflows['new_borrowing']
         return fcff, fcfe
-
 
 
 ticker = 'TSLA'

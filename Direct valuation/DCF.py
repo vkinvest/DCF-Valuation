@@ -27,7 +27,7 @@ class DCF:
         return df['Revenue']
 
     @staticmethod
-    def free_cashflow():
+    def free_cashflow(): # todo which formular is best
         def net_income_est():
             revenue_est = dcf.revenue_est()
             net_income = income['NetIncome'] / 1000

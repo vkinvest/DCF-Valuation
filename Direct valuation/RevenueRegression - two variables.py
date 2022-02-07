@@ -10,10 +10,10 @@ class TwoVariablesRegression:
 
     def __init__(self, ticker):
         self.ticker = ticker
-        self.financials = pd.read_excel(f'{ticker}_quarterly_financials.xlsx')[:-1]
-        self.expense_revenue = self.financials.filter(regex=r'TotalRevenue$|TotalExpenses').set_index(self.financials['name'])
-        self.expense = self.financials['TotalExpenses'].values.reshape(-1, 1)
-        self.revenue = self.financials['TotalRevenue'].values.reshape(-1, 1)
+        self.income = pd.read_excel(f'{ticker}_annual_financials.xlsx')[:-1]#.set_index('Date')
+        self.expense_revenue = self.income.filter(regex=r'Date|TotalRevenue$|TotalExpenses').set_index('Date')
+        self.expense = self.income['TotalExpenses'].values.reshape(-1, 1)
+        self.revenue = self.income['TotalRevenue'].values.reshape(-1, 1)
         self.regressor = LinearRegression()
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.expense, self.revenue, test_size=0.2, random_state=0)
 
