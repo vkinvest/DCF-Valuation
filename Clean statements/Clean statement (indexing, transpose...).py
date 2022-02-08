@@ -1,5 +1,5 @@
 import pandas as pd
-import xlsxwriter
+
 
 ticker = 'TSLA'
 xls = pd.ExcelFile(f'{ticker}.xlsx')
@@ -15,7 +15,7 @@ income = income[1:]
 balance = balance[1:]
 cashflow = cashflow[1:]
 
-writer = pd.ExcelWriter(f'{ticker}_cleaned.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter(f'{ticker}_cleaned.xlsx')
 
 income.to_excel(writer, sheet_name='income')
 balance.to_excel(writer, sheet_name='balance')
