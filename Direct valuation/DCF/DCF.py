@@ -141,7 +141,7 @@ class DCF:
         required_return = dcf.discount_factor()
 
         def terminal_value():
-            perpetual_growth = 0.035
+            perpetual_growth = 0.04
             print('Assumption: perpetual growth', perpetual_growth), print('\n')
             value = (df['FCFF'][7] * (1 + perpetual_growth)) / (required_return - perpetual_growth)
             df['FCFF'].iloc[-1] = value
