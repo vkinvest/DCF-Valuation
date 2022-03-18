@@ -9,97 +9,161 @@ import statistics
 
 
 # uses the past 4 years of data from yahoo finance
-
-
 class DCF:
     def __init__(self, ticker):
         self.ticker = ticker
-        income.columns = income.columns.str.lower()
-        balance.columns = balance.columns.str.lower()
-        cashflow.columns = cashflow.columns.str.lower()
 
     @staticmethod
     def revenue():
-        revenue = income['totalrevenue']
-
         def growth_rate():
             growth_rate = statistics.mean((revenue.diff() / revenue.shift(1)).dropna())
             print(f'Revenue Growth Rate:', round(growth_rate, 2))
             return growth_rate
 
         growth_rate = growth_rate()
-        current_rev = int(revenue[-1] * (1 + growth_rate))
-        next1_rev = int(current_rev * (1 + growth_rate))
-        next2_rev = int(next1_rev * (1 + growth_rate))
-        next3_rev = int(next2_rev * (1 + growth_rate))
-        df['Revenue'] = [revenue[3], revenue[2], revenue[1], revenue[0], current_rev, next1_rev, next2_rev, next3_rev,
-                         'nan']
+        rev_5 = int(revenue[-1] * (1 + growth_rate))
+        rev_6 = int(rev_5 * (1 + growth_rate))
+        rev_7 = int(rev_6 * (1 + growth_rate))
+        rev_8 = int(rev_7 * (1 + growth_rate))
+        rev_9 = int(rev_8 * (1 + growth_rate))
+
+        df['Revenue'] = [revenue[0], revenue[1], revenue[2], revenue[3], rev_5, rev_6, rev_7, rev_8, rev_9, 'nan']
         return df['Revenue']
 
     @staticmethod
-    def net_income():
-        def margin():
-            margin = statistics.mean((income['netincome'] / income['totalrevenue']))
-            if margin < 0:
-                margin = max((income['netincome'] / income['totalrevenue']))
-                print(f'Max net margin (average net income margin is negative):', round(margin, 2))
-            else:
-                print(f'Net income margin: {margin}')
+    def free_cashflow_firm():
+        def fcff():
+            EBIT = income['ebit']
+            NCC = cashflow.filter(regex=r'depreciation').iloc[:, 0]
+
+            wc_inv = balance['totalcurrentassets'] - balance['totalcurrentliabilities']
+            fc_inv = cashflow['capitalexpenditures']
+            change_wc = wc_inv - wc_inv.shift(1).fillna(0)
+            change_fc = fc_inv - fc_inv.shift(1).fillna(0)
+            tax = income.filter(regex=r'taxexpense').iloc[:, 0]
+
+            FCFF = EBIT + NCC - change_wc - change_fc - tax
+            return FCFF
+
+        fcff = fcff()
+
+        def fcff_margin():
+            margin = statistics.mean(fcff / income['totalrevenue'])
+            print(f'Free cash flow margin', round(margin, 2))
             return margin
 
-        margin = margin()
-        current_net_income = int(revenue[4] * margin)
-        net_income_6 = int(revenue[5] * margin)
-        net_income_7 = int(revenue[6] * margin)
-        net_income_8 = int(revenue[7] * margin)
+        margin = fcff_margin()
+        fcff_5 = int(rev_df[4] * margin)
+        fcff_6 = int(rev_df[5] * margin)
+        fcff_7 = int(rev_df[6] * margin)
+        fcff_8 = int(rev_df[7] * margin)
+        fcff_9 = int(rev_df[8] * margin)
 
-        net_income = income['netincome'] / 1000
-        df['Net Income'] = (net_income[3], net_income[2], net_income[1], net_income[0],
-                            current_net_income, net_income_6, net_income_7, net_income_8, 'nan')
-        return df['Net Income']
+        df['FCFF'] = (fcff[0], fcff[1], fcff[2], fcff[3], fcff_5, fcff_6, fcff_7, fcff_8, fcff_9, 'nan')
+        return df['FCFF']
 
     @staticmethod
-    def free_cashflow():
-        def calculate_fcff():
-            wc_inv = balance['CurrentAssets'] - balance['CurrentLiabilities']
-            fc_inv = cashflow['CapitalExpenditure']
-            depreciation = cashflow.filter(regex=r'depreciation')
-            new_debt = cashflow.filter(regex=r'debt')
-            inflows = {
-                'EBIT': income['EBIT'],
-                'NCC': depreciation,
-                'new_borrowing': cashflow['netborrowings']
-            }
+    def wacc():
+        # required return: WACC =  We *Ke + Wd *Kd *(1-t)
+        def cost_of_equity():
+            market_return = 0.10
+            beta = stock_info.get('Beta (5Y Monthly)')
+            rf_rate = dr.DataReader('^TNX', 'yahoo', past_date, today)['Adj Close'][0]/100
+            print('RF rate:', round(rf_rate, 2), '  Beta:', beta)
 
-            outflows = {
-                'tax': income['PretaxIncome'] - income['NetIncome'],
-                'change_wc': wc_inv.shift(1) - wc_inv,
-                'change_fc': fc_inv.shift(1) - fc_inv,
-                'interests': income['InterestExpense'],
-            }
-            income['FCFF'] = inflows['EBIT'] + outflows['tax'] + inflows['NCC'] + outflows['change_wc'] + outflows[
-                'change_fc']
-            return income['FCFF']
+            ke = round(rf_rate + beta * (market_return - rf_rate), 2)
+            print('Cost of equity', ke)
+            return ke
 
-        def fcff_margin():  # fcff % of net income
-            calculate_fcff()
-            fcff_item = income.filter(regex=r'^FCFF|^NetIncome$').dropna()
-            fcff_margin = statistics.mean((fcff_item['FCFF'] / fcff_item['NetIncome']))
-            print(f'Free cash flow to net income margin: {fcff_margin:}')
-            return fcff_margin
+        ke = cost_of_equity()
+        total_debt = balance['shortlongtermdebt'] + balance['longtermdebt'] # todo data of dete is incomplete from yahoo
+
+        def cost_of_debt():
+            interest_exp = income['interestexpense']
+            kd = (-interest_exp / total_debt).dropna()[-1]
+
+            tax_rate = income['incometaxexpense'] / income['incomebeforetax']
+            tax_adj_kd = round(kd * (1 - tax_rate[-1]), 2)
+            print('Cost of debt', tax_adj_kd)
+            return tax_adj_kd
+
+        tax_adj_kd = cost_of_debt()
+
+        def weights():
+            market_cap = stock_info.get("Market Cap")
+            if market_cap[-1] == 'T':
+                market_cap = float(market_cap.replace('T', '0')) * 1000000
+            if market_cap[-1] == 'B':
+                market_cap = float(market_cap.replace('B', '0')) * 1000
+            elif market_cap[-1] == 'M':
+                market_cap = float(market_cap.replace('M', ''))
+            print(f'Market cap: {market_cap:} millions')
+
+            total_capital = total_debt[-1] + market_cap
+            weight_debt = round(total_debt[-1] / total_capital, 2)
+            weight_equity = round(market_cap / total_capital, 2)
+            return weight_debt, weight_equity
+
+        weight_debt, weight_equity = weights()
+        wacc = round((weight_equity * ke + weight_debt * tax_adj_kd), 2)
+
+        print('Weight of Equity', round(weight_equity, 2), '   Weight of Equity', round(weight_debt, 2))
+        print(f'Required return wacc: {round(wacc, 3):}')
+        return wacc
 
 
-ticker = 'sunw'
+ticker = 'tsla'
+balance = (si.get_balance_sheet(ticker) / 1000000).T.sort_index()
+income = (si.get_income_statement(ticker) / 1000000).T.sort_index()
+cashflow = (si.get_cash_flow(ticker) / 1000000).T.sort_index()
+income.columns = income.columns.str.lower()
+balance.columns = balance.columns.str.lower()
+cashflow.columns = cashflow.columns.str.lower()
+
 df = pd.DataFrame()
-# current = int(date.today().year)
-balance = (si.get_balance_sheet(ticker) / 1000).T.sort_index()
-income = (si.get_income_statement(ticker) / 1000).T.sort_index()
-cashflow = (si.get_cash_flow(ticker) / 1000).T.sort_index()
-# analysts_est = si.get_analysts_info(ticker)
+
+revenue = income['totalrevenue']
+net_income = income['netincome']
+
+stock_info = si.get_quote_table(ticker, dict_result=True)
+today = dt.date.today()
+past_date = today - dt.timedelta(days=225)
 
 dcf = DCF(ticker)
-revenue = dcf.revenue()
-dcf.net_income()
+rev_df = dcf.revenue()
+# net_df = dcf.net_income()
+dcf.free_cashflow_firm()
+wacc = dcf.wacc()
 
+
+
+
+
+
+# analysts_est = si.get_analysts_info(ticker)
+# current = int(date.today().year)
 # username = 'COLUMBIA_STU-1357760'
 # api_key = 'jzqGQu3weBamDkwsGdBfj2Dpqto7B6Ll925QpvNX'
+# 'interests': income.filter(regex=r'interestexpense')
+# past_date = current_date - dt.timedelta(days=225)
+
+# @staticmethod
+# def net_income():
+#     def net_margin():
+#         margin = statistics.mean((income['netincome'] / income['totalrevenue']))
+#         if margin < 0:
+#             margin = max((income['netincome'] / income['totalrevenue']))
+#             print(f'Max net margin (average net income margin is negative):', round(margin, 2))
+#         else:
+#             print(f'Net income margin:', round(margin, 2))
+#         return margin
+#
+#     margin = net_margin()
+#     net_5 = int(rev_df[4] * margin)
+#     net_6 = int(rev_df[5] * margin)
+#     net_7 = int(rev_df[6] * margin)
+#     net_8 = int(rev_df[7] * margin)
+#     net_9 = int(rev_df[8] * margin)
+#
+#     df['Net Income'] = (net_income[0], net_income[1], net_income[2], net_income[3], net_5, net_6, net_7, net_8, net_9, 'nan')
+#     return df['Net Income']
