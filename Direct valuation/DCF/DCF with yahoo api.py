@@ -6,7 +6,6 @@ import yfinance as yf
 import statistics
 
 
-# uses the past 4 years of data from yahoo finance
 class DCF:
     def __init__(self, ticker):
         self.ticker = ticker
@@ -57,7 +56,6 @@ class DCF:
         return df['FCFF']
 
     def wacc():
-        # required return: WACC =  We *Ke + Wd *Kd *(1-t)
         def cost_of_equity():
             market_return = 0.10
             beta = stock_info.get('Beta (5Y Monthly)')
@@ -124,13 +122,12 @@ balance = (get.balance_sheet / 1000000).T.sort_index()
 income = (get.financials / 1000000).T.sort_index()
 cashflow = (get.cashflow / 1000000).T.sort_index()
 
-
 df = pd.DataFrame()
 revenue = income['Total Revenue']
 net_income = income['Net Income']
 
 today = dt.date.today()
-past_date = today - dt.timedelta(days=225)
+past_date = today - dt.timedelta(days=30)
 stock_info = si.get_quote_table(ticker, dict_result=True)
 
 dcf = DCF(ticker)
