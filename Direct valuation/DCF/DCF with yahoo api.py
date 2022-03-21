@@ -11,7 +11,6 @@ class DCF:
     def __init__(self, ticker):
         self.ticker = ticker
 
-    @staticmethod
     def revenue():
         def growth_rate():
             growth_rate = statistics.mean((revenue.diff() / revenue.shift(1)).dropna())
@@ -28,12 +27,10 @@ class DCF:
         df['Revenue'] = [revenue[0], revenue[1], revenue[2], revenue[3], rev_5, rev_6, rev_7, rev_8, rev_9, 'nan']
         return growth_rate, df['Revenue']
 
-    @staticmethod
     def free_cashflow_firm():
         def fcff():
             EBIT = income['Operating Income']
             NCC = cashflow['Depreciation']
-
             wc_inv = balance['Total Current Assets'] - balance['Total Current Liabilities']
             fc_inv = cashflow['Capital Expenditures']
             change_wc = wc_inv - wc_inv.shift(1).fillna(0)
@@ -44,7 +41,6 @@ class DCF:
             return FCFF
 
         fcff = fcff()
-
         def fcff_margin():
             margin = statistics.mean(fcff / income['Total Revenue'])
             print(f'Free cash flow margin', round(margin, 2))
@@ -60,7 +56,6 @@ class DCF:
         df['FCFF'] = (fcff[0], fcff[1], fcff[2], fcff[3], fcff_5, fcff_6, fcff_7, fcff_8, fcff_9, 'nan')
         return df['FCFF']
 
-    @staticmethod
     def wacc():
         # required return: WACC =  We *Ke + Wd *Kd *(1-t)
         def cost_of_equity():
@@ -101,7 +96,6 @@ class DCF:
         print(f'Required return wacc: {round(wacc, 3):}')
         return wacc
 
-    @staticmethod
     def present_value():
         def terminal_value():
             perpetuity_growth = 0.03
@@ -117,7 +111,6 @@ class DCF:
         print(f'Present Value:', round(present_value, 2))
         return present_value
 
-    @staticmethod
     def share_price():
         shares_outstanding = get.info['sharesOutstanding']/1000000
         share_price = round(present_value / shares_outstanding, 2)
@@ -139,7 +132,6 @@ net_income = income['Net Income']
 today = dt.date.today()
 past_date = today - dt.timedelta(days=225)
 stock_info = si.get_quote_table(ticker, dict_result=True)
-
 
 dcf = DCF(ticker)
 growth_rate, rev_df = dcf.revenue()
