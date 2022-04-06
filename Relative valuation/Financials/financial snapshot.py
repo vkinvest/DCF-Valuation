@@ -5,6 +5,7 @@ import chart_studio.plotly as py
 import plotly.graph_objs as go
 import seaborn as sns
 import numpy as np
+import chart_studio.plotly as py
 
 
 def financial_snapshot():
@@ -16,9 +17,8 @@ def financial_snapshot():
             x=snapshot['name'],
             y=snapshot[col]
         )
-        print(col)
         snapshot_list.append(snapshot_bar)
-    fig_is = go.Figure(data=snapshot_list, layout=go.Layout(barmode='stack'))
+    fig_is = go.Figure(data=snapshot_list)
     py.plot(fig_is, filename=f'{ticker} financial outlook')
 
 
@@ -31,9 +31,8 @@ def expense_margin():
             x=margin['name'],
             y=margin[col]
         )
-        print(col)
         margin_list.append(margin_bar)
-    fig_is = go.Figure(data=margin_list, layout=go.Layout(barmode='stack'))
+    fig_is = go.Figure(data=margin_list)
     py.plot(fig_is, filename=f'{ticker} margin')
 
 
@@ -47,15 +46,14 @@ def growth_scatter():
             y=growth[col]
         )
 
-        print(col)
         growth_list.append(growth_bar)
-    fig_is = go.Figure(data=growth_list, layout=go.Layout(barmode='stack'))
+    fig_is = go.Figure(data=growth_list)
     py.plot(fig_is, filename=f'{ticker} growth')
 
 
 ticker = 'TSLA'
 
-financials = pd.read_excel(f'{ticker}_quarterly_financials.xlsx')
+financials = pd.read_excel('{ticker}_quarterly_financials.xlsx')
 snapshot = financials[1:].filter(
     regex=r'name|TotalRevenue|CostOfRevenue|^EBIT|^OperatingIncome$|GrossProfit|^NetIncome$|OperatingExpense|TotalExpenses')
 
