@@ -38,7 +38,7 @@ def expense_margin():
     fig_is = go.Figure(data=margin_list)
     py.plot(fig_is, filename=f'{ticker} margin')
 
-'''
+
 def growth_scatter():
     growth_list = []
 
@@ -52,7 +52,6 @@ def growth_scatter():
         growth_list.append(growth_bar)
     fig_is = go.Figure(data=growth_list)
     py.plot(fig_is, filename=f'{ticker} growth')
-'''
 
 
 ticker = 'TSLA'
@@ -68,14 +67,23 @@ snapshot = income.filter(
 expense = income[1:].filter(
     regex=r'fillingDate|operatingExpenses|sellingGeneralAndAdministrativeExpenses|researchAndDevelopmentExpenses|Marketing|^operatingIncome|costAndExpenses')
 
-expense['OperatingExpense margin'] = (expense['operatingExpenses'] / snapshot['revenue'])
+expense['revenue'] = snapshot['revenue'] / snapshot['revenue']
 expense['SG&A margin'] = (expense['sellingGeneralAndAdministrativeExpenses'] / snapshot['revenue'])
 expense['R&D margin'] = (expense['researchAndDevelopmentExpenses'] / snapshot['revenue'])
 
 expense['OperatingIncome margin'] = (expense['operatingIncome'] / snapshot['revenue'])
+expense['OperatingExpense margin'] = (expense['operatingExpenses'] / snapshot['revenue'])
 expense['TotalExpenses margin'] = ((expense['operatingExpenses'] + expense['costAndExpenses']) / snapshot['revenue'])
-margin = expense.filter(regex=r'fillingDate|margin')
+margin = expense.filter(regex=r'fillingDate|margin|revenue')
 
+operating = pd.DataFrame()
+operating['fillingDate'] = snapshot['fillingDate']
+operating['Revenue growth'] = snapshot['netIncome'].diff() / snapshot['netIncome'].shift(1)
+operating['GrossProfit growth'] = snapshot['grossProfit'].diff() / snapshot['grossProfit'].shift(1)
+operating['EBIT growth'] = snapshot['operatingIncome'].diff() / snapshot['operatingIncome'].shift(1)
+operating['Net income growth'] = expense['operatingExpenses'].diff() / expense['operatingExpenses'].shift(1)
+growth = operating.filter(regex=r'fillingDate|growth')
 
 fin_snapshot()
 expense_margin()
+growth_scatter()
