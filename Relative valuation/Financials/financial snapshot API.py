@@ -51,10 +51,10 @@ def growth_scatter():
 
         growth_list.append(growth_bar)
     fig_is = go.Figure(data=growth_list)
-    py.plot(fig_is, filename=f'{ticker} growth')
+    py.plot(fig_is, filename=f'{ticker} QoQ growth')
 
 
-ticker = 'TSLA'
+ticker = 'FSLY'
 api_key = 'e95137f175e3fba84a1220c74e5ecd2a'
 
 income = pd.DataFrame(((fa.income_statement(ticker, api_key, period='quarter')).T.sort_index())[-21:])
@@ -62,15 +62,13 @@ balance = pd.DataFrame(((fa.balance_sheet_statement(ticker, api_key, period='qua
 cashflow = pd.DataFrame(((fa.cash_flow_statement(ticker, api_key, period='quarter')).T.sort_index())[-21:])
 
 snapshot = income.filter(
-    regex=r'fillingDate|revenue|costOfRevenue|^EBIT|^operatingIncome$|grossProfit|^netIncome$|operatingExpenses|costAndExpenses')
-
+    regex=r'fillingDate|revenue|costOfRevenue|^EBIT|^operatingIncome$|grossProfit$|^netIncome$|operatingExpenses')
 expense = income[1:].filter(
     regex=r'fillingDate|operatingExpenses|sellingGeneralAndAdministrativeExpenses|researchAndDevelopmentExpenses|Marketing|^operatingIncome|costAndExpenses')
 
 expense['revenue'] = snapshot['revenue'] / snapshot['revenue']
 expense['SG&A margin'] = (expense['sellingGeneralAndAdministrativeExpenses'] / snapshot['revenue'])
 expense['R&D margin'] = (expense['researchAndDevelopmentExpenses'] / snapshot['revenue'])
-
 expense['OperatingIncome margin'] = (expense['operatingIncome'] / snapshot['revenue'])
 expense['OperatingExpense margin'] = (expense['operatingExpenses'] / snapshot['revenue'])
 expense['TotalExpenses margin'] = expense['costAndExpenses'] / snapshot['revenue']
@@ -78,10 +76,26 @@ margin = expense.filter(regex=r'fillingDate|margin|revenue')
 
 operating = pd.DataFrame()
 operating['fillingDate'] = snapshot['fillingDate']
-operating['Revenue growth'] = snapshot['netIncome'].diff() / snapshot['netIncome'].shift(1)
+operating['Revenue growth'] = snapshot['revenue'].diff() / snapshot['revenue'].shift(1)
+for n in range(len(snapshot['revenue'])):
+    if snapshot['revenue'][n] > snapshot['revenue'][n-1]:
+        operating['Revenue growth'] = snapshot['revenue'].diff() / abs(snapshot['revenue'].shift(1))
+
 operating['GrossProfit growth'] = snapshot['grossProfit'].diff() / snapshot['grossProfit'].shift(1)
+for n in range(len(snapshot['grossProfit'])):
+    if snapshot['grossProfit'][n] > snapshot['grossProfit'][n-1]:
+        operating['grossProfit growth'] = snapshot['grossProfit'].diff() / abs(snapshot['grossProfit'].shift(1))
+
 operating['EBIT growth'] = snapshot['operatingIncome'].diff() / snapshot['operatingIncome'].shift(1)
-operating['Net income growth'] = expense['operatingExpenses'].diff() / expense['operatingExpenses'].shift(1)
+for n in range(len(snapshot['netIncome'])):
+    if snapshot['netIncome'][n] > snapshot['netIncome'][n-1]:
+        operating['EBIT growth'] = snapshot['netIncome'].diff() / abs(snapshot['netIncome'].shift(1))
+
+operating['Net income growth'] = snapshot['netIncome'].diff() / snapshot['netIncome'].shift(1)
+for n in range(len(snapshot['netIncome'])):
+    if snapshot['netIncome'][n] > snapshot['netIncome'][n-1]:
+        operating['Net income growth'] = snapshot['netIncome'].diff() / abs(snapshot['netIncome'].shift(1))
+
 growth = operating.filter(regex=r'fillingDate|growth')
 
 fin_snapshot()
