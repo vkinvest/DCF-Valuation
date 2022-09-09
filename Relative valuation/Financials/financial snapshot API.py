@@ -73,7 +73,7 @@ expense['R&D margin'] = (expense['researchAndDevelopmentExpenses'] / snapshot['r
 
 expense['OperatingIncome margin'] = (expense['operatingIncome'] / snapshot['revenue'])
 expense['OperatingExpense margin'] = (expense['operatingExpenses'] / snapshot['revenue'])
-expense['TotalExpenses margin'] = ((expense['operatingExpenses'] + expense['costAndExpenses']) / snapshot['revenue'])
+expense['TotalExpenses margin'] = expense['costAndExpenses'] / snapshot['revenue']
 margin = expense.filter(regex=r'fillingDate|margin|revenue')
 
 operating = pd.DataFrame()
