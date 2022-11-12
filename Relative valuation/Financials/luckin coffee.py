@@ -193,6 +193,7 @@ margin, growth, compare_day1, risk = clean_data()
 charts()
 
 
+
 # def financial_snapshot():
 #     snapshot_list = []
 #
